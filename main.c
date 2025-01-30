@@ -10,7 +10,7 @@ void init_led() {
 }
 
 // TODO:O LED vermelho do LED RGB deve piscar continuamente 5 vezes por segundo.
-void piscar_led() {
+void piscar_led_vermelho() {
     gpio_put(led_pin, 1);
     sleep_ms(100);
     gpio_put(led_pin, 0);
@@ -22,6 +22,6 @@ int main()
 
     // Loop principal
     while (true) {
-        piscar_led();
+        piscar_led_vermelho();
     }
 }
