@@ -43,11 +43,22 @@
       "top": -472.4,
       "left": -13.6,
       "attrs": {}
+    },
+    {
+      "type": "wokwi-rgb-led",
+      "id": "rgb_main",
+      "top": -44,
+      "left": -37.3,
+      "attrs": { "common": "cathode" }
     }
   ],
   "connections": [
     [ "pico:GP0", "$serialMonitor:RX", "", [] ],
     [ "pico:GP1", "$serialMonitor:TX", "", [] ],
+    [ "pico:GND.4", "rgb_main:COM", "black", [ "h0" ] ],
+    [ "pico:GP13", "rgb_main:R", "red", [ "h0" ] ],
+    [ "rgb_main:G", "pico:GP11", "green", [ "v0" ] ],
+    [ "rgb_main:B", "pico:GP12", "blue", [ "h0" ] ],
     [ "gnd1:GND", "rgb1:VSS", "black", [ "v0" ] ],
     [ "rgb2:VSS", "gnd1:GND", "green", [ "v0" ] ],
     [ "rgb3:VSS", "gnd1:GND", "green", [ "v0" ] ],
