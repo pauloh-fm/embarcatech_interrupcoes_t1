@@ -2,10 +2,20 @@
 #include "matriz_led.h"
 #include "stdio.h"
 #include "numeros.h"
+#include "botoes.h"
+#include <stdio.h>
+#include "hardware/timer.h"
 
 const uint led_pin = 13;    // Green=11, Blue=12, Red=13
 
+int numero_atual = 0;
+volatile bool incrementar_flag = false;     // Flag setada na interrupção para atualizar a matriz
 
+// Para debounce: guarda o instante (em microssegundos) da última interrupção processada
+static volatile uint32_t last_irq_time = 0;
+
+// Protótipo do callback da interrupção
+static void interrupcao_incrementar(uint gpio, uint32_t events);
 void init_led() {
 //Inicializações
     gpio_init(led_pin);                 // Inicializa o pino 13 do LED
@@ -22,32 +32,53 @@ void piscar_led_vermelho() {
 }
 //TODO: Os LEDs WS2812 devem ser usados para criar efeitos visuais representando números de 0 a 9.
 void imprimir_numero(const uint8_t numero[][2], size_t tamanho, uint8_t r, uint8_t g, uint8_t b) {
-    npClear();  // Limpa a matriz de LEDs
-
-    // Acende os LEDs conforme as posições do número
+    npClear();
     for (size_t i = 0; i < tamanho; i++) {
         int x = numero[i][0];
         int y = numero[i][1];
         int indice = obterIndice(x, y);
-
-        // Define a cor do LED no índice correspondente
         npSetLED(indice, r, g, b);
-
     }
-npWrite();  // Atualiza os LEDs com a nova configuração
-
-    // sleep_ms(500);
-    // npClear();
-    // npWrite();
+    npWrite();
 }
+// TODO: Função que verifica se o botão A foi pressionado e, se sim, incrementa o número exibido
+void incrementar_numero(void) {
+    imprimir_numero(numeros[numero_atual].numero,
+                     numeros[numero_atual].tamanho,
+                     128, 0, 0);
+}
+static void interrupcao_incrementar(uint gpio, uint32_t events) {
+    uint32_t current_time = to_us_since_boot(get_absolute_time()); // Obtem o instante atual
+    if (current_time - last_irq_time < 200000) return;  // Se menos de 20ms se passaram, ignora (debounce)
+    last_irq_time = current_time;
+    if (gpio == botao_a) {
+        // Incrementa o número, ciclando de 9 para 0
+        numero_atual++;
+        if (numero_atual >= 9) numero_atual = 0;
+        incrementar_flag = true;
+    }
+}
+// TODO: Função para fazer o botão B decrementar em 1 o numero de 0 a 9.
 int main()
 {
     init_led();
     // inicializa WS2812 
     npInit(LED_PIN_WS2812);
     // Loop principal
-    imprimir_numero(NUMERO_9, sizeof(NUMERO_9) / sizeof(NUMERO_9[0]), 255, 0, 0);
-    while (true) {
-        piscar_led_vermelho();
+    init_botoes(botao_a);
+    init_botoes(botao_b);
+printf("salve\n");
+ gpio_set_irq_enabled_with_callback(botao_a, GPIO_IRQ_EDGE_FALL, true, interrupcao_incrementar);
+while (true) {
+        piscar_led_vermelho();  // Pisca o LED de status
+
+        // Se a flag de atualização estiver ativa, atualiza a matriz de LEDs
+        if (incrementar_flag) {
+            printf("incrementar_flag ativada, exibindo número: %d\n", numero_atual);
+            incrementar_numero();
+            incrementar_flag = false;
+        }
     }
+    
+    return 0;
 }
