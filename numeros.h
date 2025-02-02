@@ -1,6 +1,12 @@
 #include <stdint.h>
 
 // Definição dos arrays como 'static const' para ter ligação interna.
+static const uint8_t NUMERO_0[][2] = {
+    {1, 0}, {2, 0}, {3, 0}, {1, 1}, {3, 1},
+    {1, 2}, {3, 2}, {1, 3}, {3, 3},
+    {1, 4}, {2, 4}, {3, 4}
+};
+
 static const uint8_t NUMERO_1[][2] = {
     {2, 0}, {2, 1}, {2, 2}, {2, 3}, {2, 4}
 };
@@ -53,7 +59,8 @@ typedef struct {
 } Numero;
 
 // Criação do array que agrupa os números
-static const Numero numeros[9] = {
+static const Numero numeros[10] = {
+    { NUMERO_0, sizeof(NUMERO_0) / sizeof(NUMERO_0[0]) },
     { NUMERO_1, sizeof(NUMERO_1) / sizeof(NUMERO_1[0]) },
     { NUMERO_2, sizeof(NUMERO_2) / sizeof(NUMERO_2[0]) },
     { NUMERO_3, sizeof(NUMERO_3) / sizeof(NUMERO_3[0]) },
