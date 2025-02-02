@@ -4,6 +4,8 @@
 #include "numeros.h"
 #include "botoes.h"
 #include <stdio.h>
+#include "hardware/timer.h"
+
 const uint led_pin = 13;    // Green=11, Blue=12, Red=13
 
 int numero_atual = 0;
@@ -46,6 +48,9 @@ void incrementar_numero(void) {
                      128, 0, 0);
 }
 static void interrupcao_incrementar(uint gpio, uint32_t events) {
+    uint32_t current_time = to_us_since_boot(get_absolute_time()); // Obtem o instante atual
+    if (current_time - last_irq_time < 200000) return;  // Se menos de 20ms se passaram, ignora (debounce)
+    last_irq_time = current_time;
     if (gpio == botao_a) {
         // Incrementa o número, ciclando de 9 para 0
         numero_atual++;
